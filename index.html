@@ -41,9 +41,9 @@
             const now = Date.now();
             const secondsPassed = (now - startDate) / 1000;
             const current = baseValue + (perSecond * secondsPassed);
-
-            // Форматируем с пробелами для читаемости
-            el.textContent = Math.floor(current).toLocaleString("ru-RU");
+            
+            // 5 знаков после запятой
+            el.textContent = current.toFixed(5).toLocaleString("ru-RU");
             
             // Плавное обновление (браузер сам решает, когда рисовать)
             requestAnimationFrame(update);
