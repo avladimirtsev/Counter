@@ -44,8 +44,8 @@
              
             // Показываем только целую часть + 5 знака (меньше мельтешения)
     el.textContent = current.toLocaleString("ru-RU", {
-        minimumFractionDigits: 10,
-        maximumFractionDigits: 10
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4
     });
         
             // Плавное обновление (браузер сам решает, когда рисовать)
