@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Счётчик прироста богатства</title>
+    <style>
+        /* === ФОН: АНИМИРОВАННЫЙ ГРАДИЕНТ === */
+        body {
+            background: linear-gradient(-45deg, #0f172a, #1e3a5f, #00ff88, #0f172a);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            
+            /* === ОФОРМЛЕНИЕ СЧЁТЧИКА === */
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-size: 3rem;
+            overflow: hidden; /* чтобы градиент не создавал прокрутку */
+        }
+
+        /* Ключевые кадры для движения градиента */
+        @keyframes gradientShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+ /* Контейнер: ставит заголовок и счётчик друг над другом */
+        .counter-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 2rem 3rem;
+            border-radius: 16px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Надпись над счётчиком */
+        .counter-label {
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #94a3b8; /* приглушённый серо-голубой */
+            margin-bottom: 0.5rem;
+            text-shadow: none;
+        }
+
+        /* Сам счётчик */
+        #counter {
+            font-size: 3rem;
+            text-shadow: 0 0 20px #00ff88;
+        }   
+    </style>
+</head>
+<body>
+    <div class="counter-box">
+        <div class="counter-label">Ваш счет</div>
+        <div id="counter">0</div>
+    </div>
+
+    <script>
+        // === НАСТРОЙКИ ВАШЕГО СЧЁТЧИКА ===
+        // Базовая цифра на момент начала отсчёта
+        const baseValue =2576; 
+        
+        // Точка отсчёта (когда baseValue был актуален)
+        const startDate = new Date("2026-10-13T00:00:00+03:00").getTime(); 
+        
+        // Скорость роста в секунду (например, +5 в секунду)
+        const perSecond = 0.0011925926; 
+
+        const el = document.getElementById("counter");
+
+        function update() {
+            const now = Date.now();
+            const secondsPassed = (now - startDate) / 1000;
+            const current = baseValue + (perSecond * secondsPassed);
+             
+            // Показываем только целую часть + 5 знака (меньше мельтешения)
+    el.textContent = current.toLocaleString("ru-RU", {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4
+    });
+        
+            // Плавное обновление (браузер сам решает, когда рисовать)
+            requestAnimationFrame(update);
+        }
+
+        update();
+    </script>
+</body>
+</html>
