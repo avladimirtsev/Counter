@@ -43,7 +43,7 @@
             const current = baseValue + (perSecond * secondsPassed);
             
             // 5 знаков после запятой
-            el.textContent = current.toFixed(5).toLocaleString("ru-RU");
+            el.textContent = current.toFixed(5);
             
             // Плавное обновление (браузер сам решает, когда рисовать)
             requestAnimationFrame(update);
