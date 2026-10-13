@@ -41,10 +41,13 @@
             const now = Date.now();
             const secondsPassed = (now - startDate) / 1000;
             const current = baseValue + (perSecond * secondsPassed);
-            
-            // 5 знаков после запятой
-            el.textContent = current.toFixed(5);
-            
+             
+            // Показываем только целую часть + 5 знака (меньше мельтешения)
+    el.textContent = current.toLocaleString("ru-RU", {
+        minimumFractionDigits: 5,
+        maximumFractionDigits: 5
+    });
+        
             // Плавное обновление (браузер сам решает, когда рисовать)
             requestAnimationFrame(update);
         }
