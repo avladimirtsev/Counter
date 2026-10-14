@@ -20,9 +20,11 @@
             align-items: center;
             gap: 1.5rem;                 /* отступ между карточками */
             min-height: 100vh;
+            min-height: 100dvh;          /* на мобильных */
             margin: 0;
-            padding: 3rem 0 2rem;
-            overflow: hidden; /* чтобы градиент не создавал прокрутку */
+            padding: 3rem 1rem 2rem;
+            overflow-x: hidden; /* чтобы градиент не создавал прокрутку */
+            overflow-y: auto;
         }
 
         /* Ключевые кадры для движения градиента */
