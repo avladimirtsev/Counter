@@ -97,6 +97,58 @@
             transform: scale(0.97);
             box-shadow: 0 0 15px rgba(255, 61, 113, 0.6);
         }
+        /* === БЛОК НОВОСТЕЙ === */
+        .news-box {
+            min-width: 260px;
+            max-width: 420px;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 1.5rem 2rem;
+            border-radius: 16px;
+            backdrop-filter: blur(4px);
+            text-align: left;
+        }
+
+        .news-title {
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .news-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+
+        .news-item {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            line-height: 1.45;
+        }
+
+        .news-item .news-date {
+            display: block;
+            color: #64748b;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            margin-bottom: 0.2rem;
+        }
+
+        .news-item .news-text {
+            color: #e2e8f0;
+        }
+
+        .news-item.new .news-text {
+            color: #00ff88;
+        }
     </style>
 </head>
 <body>
@@ -117,6 +169,12 @@
     
     <button class="withdraw-btn" id="withdrawBtn">Вывод дохода</button>
 
+    <!-- === БЛОК НОВОСТЕЙ === -->
+    <div class="news-box">
+        <div class="news-title">Новости проекта</div>
+        <ul class="news-list" id="newsList"></ul>
+    </div>
+    
     <script>
         // === НАСТРОЙКИ СЧЁТЧИКОВ ===
         const counters = [
@@ -163,6 +221,48 @@
         document.getElementById("withdrawBtn").addEventListener("click", () => {
             alert("Заявка на вывод дохода отправлена!");
         });
+        // === НОВОСТИ ПРОЕКТА ===
+        // Просто добавляйте объекты в массив — они появятся на странице.
+        const news = [
+            {
+                date: "14.10.2026",
+                text: "Запущена новая версия личного кабинета.",
+                isNew: true
+            },
+            {
+                date: "10.10.2026",
+                text: "Увеличена ставка начисления до 8% годовых."
+            },
+            {
+                date: "05.10.2026",
+                text: "Выплаты теперь приходят в течение 24 часов."
+            }
+        ];
+
+        function renderNews() {
+            const list = document.getElementById("newsList");
+            list.innerHTML = "";
+
+            if (!news.length) {
+                const empty = document.createElement("li");
+                empty.className = "news-item";
+                empty.innerHTML = `<span class="news-text" style="color:#64748b">Пока новостей нет</span>`;
+                list.appendChild(empty);
+                return;
+            }
+
+            for (const item of news) {
+                const li = document.createElement("li");
+                li.className = "news-item" + (item.isNew ? " new" : "");
+                li.innerHTML = `
+                    <span class="news-date">${item.date}</span>
+                    <span class="news-text">${item.text}</span>
+                `;
+                list.appendChild(li);
+            }
+        }
+
+        renderNews();
     </script>
 </body>
 </html>
