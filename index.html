@@ -225,20 +225,27 @@
             requestAnimationFrame(update);
         }
         update();
-         // === КНОПКА "ВЫВОД ДОХОДА" ===
+        // === КНОПКА "ВЫВОД ДОХОДА" С СОХРАНЕНИЕМ СОСТОЯНИЯ ===
         const btn = document.getElementById("withdrawBtn");
-        let withdrawn = false;
+
+        // Проверяем, отправляли ли уже заявку (сохраняется в браузере)
+        if (localStorage.getItem("withdrawn") === "1") {
+            btn.textContent = "Заявка отправлена";
+            btn.disabled = true;
+        }
 
         btn.addEventListener("click", () => {
-            if (withdrawn) return;
-            withdrawn = true;
+            if (btn.disabled) return;
 
-            // меняем надпись и блокируем
-            btn.textContent = "Поздравляем! Теперь Вы получаете долю Богатства. ";
+            // Меняем надпись и блокируем
+            btn.textContent = "Поздравляем! Теперь Вы получаете долю Богатства.";
             btn.disabled = true;
 
-            // здесь можно отправить данные на сервер:
-            // fetch("/api/withdraw", { method: "POST", ... });
+            // Сохраняем состояние — переживёт перезагрузку
+            localStorage.setItem("withdrawn", "1");
+
+            // Здесь можно отправить данные на сервер:
+            // fetch("/api/withdraw", { method: "POST" });
         });
         
         // === НОВОСТИ ПРОЕКТА ===
