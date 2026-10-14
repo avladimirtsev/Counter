@@ -225,10 +225,22 @@
             requestAnimationFrame(update);
         }
         update();
-        // === ОБРАБОТЧИК КНОПКИ ===
-        document.getElementById("withdrawBtn").addEventListener("click", () => {
-            alert("Поздравляем, теперь Вы получаете свою долю от Богатства!");
+         // === КНОПКА "ВЫВОД ДОХОДА" ===
+        const btn = document.getElementById("withdrawBtn");
+        let withdrawn = false;
+
+        btn.addEventListener("click", () => {
+            if (withdrawn) return;
+            withdrawn = true;
+
+            // меняем надпись и блокируем
+            btn.textContent = "Заявка отправлена";
+            btn.disabled = true;
+
+            // здесь можно отправить данные на сервер:
+            // fetch("/api/withdraw", { method: "POST", ... });
         });
+        
         // === НОВОСТИ ПРОЕКТА ===
         // Просто добавляйте объекты в массив — они появятся на странице.
         const news = [
