@@ -105,8 +105,8 @@
                 const current = c.baseValue + c.perSecond * secondsPassed;
 
                 c.el.textContent = current.toLocaleString("ru-RU", {
-                    minimumFractionDigits: 4,
-                    maximumFractionDigits: 0
+                    minimumFractionDigits: c.digits,
+                    maximumFractionDigits: c.digits
                 });
             }
 
