@@ -203,9 +203,10 @@
             {
                 el: document.getElementById("counter3"),
                 baseValue: 0,                 // своё стартовое значение
-                startDate: new Date("2026-10-14T00:00:00+03:00").getTime(),
+                startDate: null,
                 perSecond: 0.00000000000867651,                // своя скорость
-                digits: 10
+                digits: 10,
+                active: false
         }
         ];
 
@@ -213,13 +214,22 @@
             const now = Date.now();
 
             for (const c of counters) {
-                const secondsPassed = (now - c.startDate) / 1000;
-                const current = c.baseValue + c.perSecond * secondsPassed;
+                // Если счётчик ждёт активации — показываем базовое значение
+        if (c.active === false || c.startDate === null) {
+            c.el.textContent = c.baseValue.toLocaleString("ru-RU", {
+                minimumFractionDigits: c.digits,
+                maximumFractionDigits: c.digits
+            });
+            continue;
+        }
 
-                c.el.textContent = current.toLocaleString("ru-RU", {
-                    minimumFractionDigits: c.digits,
-                    maximumFractionDigits: c.digits
-                });
+        const secondsPassed = (now - c.startDate) / 1000;
+        const current = c.baseValue + c.perSecond * secondsPassed;
+
+        c.el.textContent = current.toLocaleString("ru-RU", {
+            minimumFractionDigits: c.digits,
+            maximumFractionDigits: c.digits
+        });
             }
 
             requestAnimationFrame(update);
