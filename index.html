@@ -78,6 +78,11 @@
         <div class="counter blue" id="counter2">0</div>
     </div>
 
+    <div class="counter-box">
+        <div class="counter-label">Ваш счет</div>
+        <div class="counter blue" id="counter3">0</div>
+    </div>
+
     <script>
         // === НАСТРОЙКИ СЧЁТЧИКОВ ===
         const counters = [
@@ -94,7 +99,14 @@
                 startDate: new Date("2026-10-13T00:00:00+03:00").getTime(),
                 perSecond: -0.011,                // своя скорость
                 digits: 0
-            }
+            },
+            {
+                el: document.getElementById("counter3"),
+                baseValue: 0,                 // своё стартовое значение
+                startDate: new Date("2026-10-13T00:00:00+03:00").getTime(),
+                perSecond: 0.0001,                // своя скорость
+                digits: 4
+        }
         ];
 
         function update() {
