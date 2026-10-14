@@ -82,14 +82,14 @@
             {
                 el: document.getElementById("counter1"),
                 baseValue: 2576,
-                startDate: new Date("2026-10-14T00:00:00+03:00").getTime(),
+                startDate: new Date("2026-10-13T00:00:00+03:00").getTime(),
                 perSecond: 0.0011925926,
                 digits: 4
             },
             {
                 el: document.getElementById("counter2"),
                 baseValue: 143000000,                 // своё стартовое значение
-                startDate: new Date("2026-10-14T00:00:00+03:00").getTime(),
+                startDate: new Date("2026-10-13T00:00:00+03:00").getTime(),
                 perSecond: -1,                // своя скорость
                 digits: 0
             }
@@ -104,7 +104,7 @@
 
                 c.el.textContent = current.toLocaleString("ru-RU", {
                     minimumFractionDigits: 4,
-                    maximumFractionDigits: 0
+                    maximumFractionDigits: 4
                 });
             }
 
