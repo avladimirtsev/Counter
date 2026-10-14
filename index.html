@@ -72,7 +72,7 @@
             color: #FFFDD0;
             text-shadow: 0 0 20px #FFFDD0;
         }   
-        /* === КНОПКА "ВЫВОД ДОХОДА" === */
+        /* === КНОПКА === */
         .withdraw-btn {
             min-width: 260px;
             padding: 1.2rem 3rem;
@@ -87,18 +87,22 @@
             border-radius: 16px;
             cursor: pointer;
             box-shadow: 0 0 25px rgba(255, 61, 113, 0.5);
-            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease, background 0.3s ease;
         }
 
-        .withdraw-btn:hover {
-            filter: brightness(1.1);
-            box-shadow: 0 0 35px rgba(255, 61, 113, 0.8);
-        }
+        .withdraw-btn:hover { filter: brightness(1.1); }
+        .withdraw-btn:active { transform: scale(0.97); }
 
-        .withdraw-btn:active {
-            transform: scale(0.97);
-            box-shadow: 0 0 15px rgba(255, 61, 113, 0.6);
+        /* Состояние после нажатия */
+        .withdraw-btn:disabled {
+            background: linear-gradient(135deg, #64748b, #475569);
+            color: #1e293b;
+            cursor: not-allowed;
+            box-shadow: none;
+            filter: none;
+            transform: none;
         }
+        
         /* === БЛОК НОВОСТЕЙ === */
         .news-box {
             min-width: 260px;
