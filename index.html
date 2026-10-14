@@ -70,6 +70,33 @@
             color: #FFFDD0;
             text-shadow: 0 0 20px #FFFDD0;
         }   
+        /* === КНОПКА "ВЫВОД ДОХОДА" === */
+        .withdraw-btn {
+            min-width: 260px;
+            padding: 1.2rem 3rem;
+            background: linear-gradient(135deg, #ff3d71, #e11d74);
+            color: #000;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(255, 61, 113, 0.5);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+        }
+
+        .withdraw-btn:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 0 35px rgba(255, 61, 113, 0.8);
+        }
+
+        .withdraw-btn:active {
+            transform: scale(0.97);
+            box-shadow: 0 0 15px rgba(255, 61, 113, 0.6);
+        }
     </style>
 </head>
 <body>
@@ -130,6 +157,10 @@
             requestAnimationFrame(update);
         }
         update();
+        // === ОБРАБОТЧИК КНОПКИ ===
+        document.getElementById("withdrawBtn").addEventListener("click", () => {
+            alert("Заявка на вывод дохода отправлена!");
+        });
     </script>
 </body>
 </html>
