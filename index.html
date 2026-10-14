@@ -237,26 +237,40 @@
         update();
         // === КНОПКА "ВЫВОД ДОХОДА" С СОХРАНЕНИЕМ СОСТОЯНИЯ ===
         const btn = document.getElementById("withdrawBtn");
+const counter3 = counters[2];  // ссылка на объект третьего счётчика
 
-        // Проверяем, отправляли ли уже заявку (сохраняется в браузере)
-        if (localStorage.getItem("withdrawn") === "1") {
-            btn.textContent = "Вам уже поступает доля Богатства.";
-            btn.disabled = true;
-        }
+// Восстановление состояния после перезагрузки
+const savedWithdrawn = localStorage.getItem("withdrawn") === "1";
+const savedStartDate = localStorage.getItem("counter3StartDate");
 
-        btn.addEventListener("click", () => {
-            if (btn.disabled) return;
+if (savedWithdrawn) {
+    btn.textContent = "Вам уже поступает доля Богатства.";
+    btn.disabled = true;
 
-            // Меняем надпись и блокируем
-            btn.textContent = "Поздравляем! Теперь Вы получаете долю Богатства.";
-            btn.disabled = true;
+    if (savedStartDate) {
+        counter3.startDate = parseInt(savedStartDate, 10);
+        counter3.active = true;
+    }
+}
 
-            // Сохраняем состояние — переживёт перезагрузку
-            localStorage.setItem("withdrawn", "1");
+btn.addEventListener("click", () => {
+    if (btn.disabled) return;
 
-            // Здесь можно отправить данные на сервер:
-            // fetch("/api/withdraw", { method: "POST" });
-        });
+    // Меняем надпись и блокируем
+    btn.textContent = "Поздравляем! Теперь Вы получаете долю Богатства.";
+    btn.disabled = true;
+
+    // Запускаем третий счётчик
+    counter3.startDate = Date.now();
+    counter3.active = true;
+
+    // Сохраняем состояние
+    localStorage.setItem("withdrawn", "1");
+    localStorage.setItem("counter3StartDate", counter3.startDate.toString());
+
+    // Здесь можно отправить данные на сервер:
+    // fetch("/api/withdraw", { method: "POST" });
+});
         
         // === НОВОСТИ ПРОЕКТА ===
         // Просто добавляйте объекты в массив — они появятся на странице.
