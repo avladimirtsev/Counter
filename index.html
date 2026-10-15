@@ -298,6 +298,9 @@
 
         const counter3 = counters[2];
 
+        // Длительность периода охлаждения (10 минут)
+        const COOLDOWN_MS = 10 * 60 * 1000;
+
         // ============================================================
         // СОХРАНЕНИЕ / ВОССТАНОВЛЕНИЕ
         // ============================================================
@@ -406,6 +409,49 @@
         const modalYes = document.getElementById("modalYes");
         const modalNo = document.getElementById("modalNo");
 
+        // ============================================================
+        // ПЕРИОД ОХЛАЖДЕНИЯ
+        // ============================================================
+        function getCooldownUntil() {
+            const raw = localStorage.getItem("cooldownUntil");
+            if (!raw) return 0;
+            const v = parseInt(raw, 10);
+            return isNaN(v) ? 0 : v;
+        }
+
+        function setCooldownUntil(ts) {
+            if (ts && ts > Date.now()) {
+                localStorage.setItem("cooldownUntil", String(ts));
+            } else {
+                localStorage.removeItem("cooldownUntil");
+            }
+        }
+
+        function formatCooldown(msLeft) {
+            const totalSec = Math.max(0, Math.ceil(msLeft / 1000));
+            const m = Math.floor(totalSec / 60);
+            const s = totalSec % 60;
+            return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+        }
+
+        // Активен ли сейчас кулдаун и осталось ли сколько-то времени
+        function cooldownRemaining() {
+            return getCooldownUntil() - Date.now();
+        }
+
+        // Обновляем вид первой кнопки с учётом кулдауна
+        function refreshWithdrawBtn() {
+            const left = cooldownRemaining();
+            if (left > 0) {
+                btn.textContent = "Доступно через " + formatCooldown(left);
+                btn.disabled = true;
+            } else {
+                // кулдаун закончился — снимаем метку
+                if (getCooldownUntil() !== 0) setCooldownUntil(0);
+                setWithdrawBtnDefault();
+            }
+        }
+
         function setWithdrawBtnDefault() {
             btn.textContent = "Получить долю богатства";
             btn.disabled = false;
@@ -417,11 +463,32 @@
         }
 
         // --- Восстановление состояния кнопки "Получить долю" ---
-        if (localStorage.getItem("withdrawn") === "1") {
+        // Сначала проверим кулдаун, потом — флаг withdrawn
+        if (cooldownRemaining() > 0) {
+            refreshWithdrawBtn();
+        } else if (localStorage.getItem("withdrawn") === "1") {
             setWithdrawBtnActive();
         } else {
             setWithdrawBtnDefault();
         }
+
+        // Тикер: раз в секунду обновляем надпись на кнопке, если идёт кулдаун
+        setInterval(() => {
+            // Кулдаун есть и тикает — обновляем надпись
+            if (cooldownRemaining() > 0) {
+                refreshWithdrawBtn();
+                return;
+            }
+
+            // Кулдаун только что закончился, но надпись ещё старая
+            if (btn.disabled && btn.textContent.startsWith("Доступно через")) {
+                if (localStorage.getItem("withdrawn") === "1") {
+                    setWithdrawBtnActive();
+                } else {
+                    setWithdrawBtnDefault();
+                }
+            }
+        }, 1000);
 
         // --- Восстановление состояния кнопки "Вывести доход" ---
         const finishValueRaw = localStorage.getItem("finishValue");
@@ -437,6 +504,7 @@
 
         btn.addEventListener("click", () => {
             if (btn.disabled) return;
+            if (cooldownRemaining() > 0) return; // страховка
 
             setWithdrawBtnActive();
 
@@ -457,7 +525,7 @@
             modal.classList.remove("show");
         }
 
-        // Собственно сценарий вывода (тот же, что был при клике)
+        // Собственно сценарий вывода
         function performFinish() {
             // 1. Считываем текущее значение counter3
             const now = Date.now();
@@ -477,9 +545,11 @@
                 maximumFractionDigits: counter3.digits
             });
 
-            // 3. Возвращаем первую кнопку в исходное состояние
+            // 3. Возвращаем первую кнопку в исходное состояние,
+            //    но СРАЗУ ставим её на период охлаждения.
             localStorage.removeItem("withdrawn");
-            setWithdrawBtnDefault();
+            setCooldownUntil(Date.now() + COOLDOWN_MS);
+            refreshWithdrawBtn(); // покажет "Доступно через 10:00" и disabled
 
             // 4. Сохраняем и фиксируем значение на второй кнопке
             localStorage.setItem("finishValue", String(finalValue));
@@ -492,7 +562,7 @@
             finishBtn.disabled = true;
         }
 
-        // Клик по второй кнопке — открываем модалку, ничего не выводим
+        // Клик по второй кнопке — открываем модалку
         finishBtn.addEventListener("click", () => {
             if (finishBtn.disabled) return;
             openConfirmModal();
