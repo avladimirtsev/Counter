@@ -209,7 +209,7 @@
         // ============================================================
         // ФУНКЦИЯ СМЕНЫ СКОРОСТИ (со снимком текущего значения)
         // ============================================================
-        function changeSpeed(c, newSpeed) {
+        function changeSpeed(c, 1) {
             if (!c.active || c.startDate === null) {
                 c.perSecond = newSpeed;
                 if (c.id) saveCounterState(c);
