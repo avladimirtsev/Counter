@@ -10,30 +10,29 @@
             background: linear-gradient(-45deg, #0f172a, #1e3a5f, #00ff88, #0f172a);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
-            
+
             /* === ОФОРМЛЕНИЕ СЧЁТЧИКА === */
             color: #00ff88;
             font-family: 'Courier New', monospace;
             display: flex;
-            flex-direction: column;      /* ← счётчики друг под другом */
+            flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            gap: 1.5rem;                 /* отступ между карточками */
+            gap: 1.5rem;
             min-height: 100vh;
-            min-height: 100dvh;          /* на мобильных */
+            min-height: 100dvh;
             margin: 0;
             padding: 3rem 1rem 2rem;
-            overflow-x: hidden; /* чтобы градиент не создавал прокрутку */
+            overflow-x: hidden;
             overflow-y: auto;
         }
 
-        /* Ключевые кадры для движения градиента */
         @keyframes gradientShift {
             0%   { background-position: 0% 50%; }
             50%  { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        /* Карточка счётчика */
+
         .counter-box {
             display: flex;
             flex-direction: column;
@@ -45,7 +44,6 @@
             min-width: 260px;
         }
 
-        /* Надпись над счётчиком */
         .counter-label {
             font-size: 1rem;
             letter-spacing: 2px;
@@ -55,24 +53,21 @@
             text-shadow: none;
         }
 
-        /* Сам счётчик */
         .counter {
             font-size: 2.2rem;
             text-shadow: 0 0 20px #00ff88;
             font-variant-numeric: tabular-nums;
         }
 
-        /* Второй счётчик — другим цветом, чтобы отличался */
         .counter.blue {
             color: #38bdf8;
             text-shadow: 0 0 20px #38bdf8;
         }
-        /* Третий счётчик — другим цветом, чтобы отличался */
         .counter.white {
             color: #FFFDD0;
             text-shadow: 0 0 20px #FFFDD0;
-        }   
-        /* === КНОПКА === */
+        }
+
         .withdraw-btn {
             min-width: 260px;
             padding: 1.2rem 3rem;
@@ -93,7 +88,6 @@
         .withdraw-btn:hover { filter: brightness(1.1); }
         .withdraw-btn:active { transform: scale(0.97); }
 
-        /* Состояние после нажатия */
         .withdraw-btn:disabled {
             background: linear-gradient(135deg, #64748b, #475569);
             color: #1e293b;
@@ -102,8 +96,7 @@
             filter: none;
             transform: none;
         }
-        
-        /* === БЛОК НОВОСТЕЙ === */
+
         .news-box {
             min-width: 260px;
             max-width: 300px;
@@ -174,7 +167,7 @@
         <div class="counter-label">Ваш счет</div>
         <div class="counter white" id="counter3">0</div>
     </div>
-    
+
     <button class="withdraw-btn" id="withdrawBtn">Получить долю богатства</button>
 
     <!-- === БЛОК НОВОСТЕЙ === -->
@@ -182,98 +175,178 @@
         <div class="news-title">Новости проекта</div>
         <ul class="news-list" id="newsList"></ul>
     </div>
-    
+
     <script>
         // === НАСТРОЙКИ СЧЁТЧИКОВ ===
         const counters = [
             {
                 el: document.getElementById("counter1"),
-                baseValue: 2680,
-                startDate: new Date("2026-10-15T00:00:00+03:00").getTime(),
-                perSecond: 0.0012407407,
+                baseValue: 2576,
+                startDate: new Date("2026-10-14T00:00:00+03:00").getTime(),
+                perSecond: 0.0011925926,
                 digits: 4
             },
             {
                 el: document.getElementById("counter2"),
-                baseValue: 143000000,                 // своё стартовое значение
+                baseValue: 143000000,
                 startDate: new Date("2026-10-14T00:00:00+03:00").getTime(),
-                perSecond: -0.011,                // своя скорость
+                perSecond: -0.011,
                 digits: 0
             },
             {
                 el: document.getElementById("counter3"),
-                baseValue: 0,                 // своё стартовое значение
-                startDate: null,
-                perSecond: 0.00000000000867651,                // своя скорость
+                baseValue: 0,
+                startDate: null,        // стартует только после клика
+                perSecond: 0.00000000000867651,
                 digits: 10,
-                active: false
-        }
+                active: false,          // пока не активен — показываем baseValue
+                id: "counter3"          // ключ для localStorage
+            }
         ];
 
+        const counter3 = counters[2];  // ссылка для удобства
+
+        // ============================================================
+        // ФУНКЦИЯ СМЕНЫ СКОРОСТИ (со снимком текущего значения)
+        // ============================================================
+        /**
+         * Меняет скорость счётчика, фиксируя уже накопленное значение.
+         * Прошлый рост «замораживается» в baseValue, новая точка отсчёта — «сейчас».
+         * @param {object} c          - объект счётчика
+         * @param {number} newSpeed   - новая скорость (единиц в секунду)
+         */
+        function changeSpeed(c, newSpeed) {
+            // Если счётчик ещё не активен — фиксировать нечего,
+            // просто меняем скорость на будущее.
+            if (!c.active || c.startDate === null) {
+                c.perSecond = newSpeed;
+                if (c.id) saveCounterState(c);
+                return;
+            }
+
+            const now = Date.now();
+            const secondsPassed = (now - c.startDate) / 1000;
+
+            // 1. Фиксируем текущее значение как новый baseValue
+            c.baseValue = c.baseValue + c.perSecond * secondsPassed;
+            // 2. Новая точка отсчёта
+            c.startDate = now;
+            // 3. Применяем новую скорость
+            c.perSecond = newSpeed;
+
+            // 4. Сохраняем обновлённое состояние
+            if (c.id) saveCounterState(c);
+        }
+
+        // ============================================================
+        // СОХРАНЕНИЕ / ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ counter3
+        // ============================================================
+        function saveCounterState(c) {
+            try {
+                localStorage.setItem(c.id + "_state", JSON.stringify({
+                    baseValue: c.baseValue,
+                    startDate: c.startDate,
+                    perSecond: c.perSecond,
+                    active: c.active
+                }));
+            } catch (e) {
+                console.warn("Не удалось сохранить состояние " + c.id, e);
+            }
+        }
+
+        function loadCounterState(c) {
+            const raw = localStorage.getItem(c.id + "_state");
+            if (!raw) return;
+            try {
+                const s = JSON.parse(raw);
+                if (typeof s.baseValue === "number") c.baseValue = s.baseValue;
+                if (typeof s.perSecond === "number") c.perSecond = s.perSecond;
+                if (typeof s.active === "boolean") c.active = s.active;
+                if (s.startDate === null || typeof s.startDate === "number") {
+                    c.startDate = s.startDate;
+                }
+            } catch (e) {
+                console.warn("Не удалось восстановить состояние " + c.id, e);
+            }
+        }
+
+        // ============================================================
+        // ОБНОВЛЕНИЕ СЧЁТЧИКОВ
+        // ============================================================
         function update() {
             const now = Date.now();
 
             for (const c of counters) {
-                // Если счётчик ждёт активации — показываем базовое значение
-        if (c.active === false || c.startDate === null) {
-            c.el.textContent = c.baseValue.toLocaleString("ru-RU", {
-                minimumFractionDigits: c.digits,
-                maximumFractionDigits: c.digits
-            });
-            continue;
-        }
+                // Если счётчик ещё не активирован — показываем базовое значение
+                if (c.active === false || c.startDate === null) {
+                    c.el.textContent = c.baseValue.toLocaleString("ru-RU", {
+                        minimumFractionDigits: c.digits,
+                        maximumFractionDigits: c.digits
+                    });
+                    continue;
+                }
 
-        const secondsPassed = (now - c.startDate) / 1000;
-        const current = c.baseValue + c.perSecond * secondsPassed;
+                const secondsPassed = (now - c.startDate) / 1000;
+                const current = c.baseValue + c.perSecond * secondsPassed;
 
-        c.el.textContent = current.toLocaleString("ru-RU", {
-            minimumFractionDigits: c.digits,
-            maximumFractionDigits: c.digits
-        });
+                c.el.textContent = current.toLocaleString("ru-RU", {
+                    minimumFractionDigits: c.digits,
+                    maximumFractionDigits: c.digits
+                });
             }
 
             requestAnimationFrame(update);
         }
-        update();
-        // === КНОПКА "ВЫВОД ДОХОДА" С СОХРАНЕНИЕМ СОСТОЯНИЯ ===
+
+        // ============================================================
+        // КНОПКА "ПОЛУЧИТЬ ДОЛЮ БОГАТСТВА"
+        // ============================================================
         const btn = document.getElementById("withdrawBtn");
-const counter3 = counters[2];  // ссылка на объект третьего счётчика
 
-// Восстановление состояния после перезагрузки
-const savedWithdrawn = localStorage.getItem("withdrawn") === "1";
-const savedStartDate = localStorage.getItem("counter3StartDate");
+        // Сначала пытаемся восстановить состояние counter3 из localStorage
+        loadCounterState(counter3);
 
-if (savedWithdrawn) {
-    btn.textContent = "Вам уже поступает доля Богатства.";
-    btn.disabled = true;
+        // Если пользователь уже нажимал кнопку — блокируем её
+        if (localStorage.getItem("withdrawn") === "1") {
+            btn.textContent = "Вам уже поступает доля Богатства.";
+            btn.disabled = true;
+        }
 
-    if (savedStartDate) {
-        counter3.startDate = parseInt(savedStartDate, 10);
-        counter3.active = true;
-    }
-}
+        btn.addEventListener("click", () => {
+            if (btn.disabled) return;
 
-btn.addEventListener("click", () => {
-    if (btn.disabled) return;
+            btn.textContent = "Поздравляем! Теперь Вы получаете долю Богатства.";
+            btn.disabled = true;
 
-    // Меняем надпись и блокируем
-    btn.textContent = "Поздравляем! Теперь Вы получаете долю Богатства.";
-    btn.disabled = true;
+            // Запускаем третий счётчик с текущего момента
+            counter3.startDate = Date.now();
+            counter3.active = true;
+            // baseValue и perSecond берутся из восстановленного состояния
+            // (или дефолтные, если это первый клик)
 
-    // Запускаем третий счётчик
-    counter3.startDate = Date.now();
-    counter3.active = true;
+            // Сохраняем состояния
+            localStorage.setItem("withdrawn", "1");
+            saveCounterState(counter3);
 
-    // Сохраняем состояние
-    localStorage.setItem("withdrawn", "1");
-    localStorage.setItem("counter3StartDate", counter3.startDate.toString());
+            // Здесь можно отправить данные на сервер:
+            // fetch("/api/withdraw", { method: "POST" });
+        });
 
-    // Здесь можно отправить данные на сервер:
-    // fetch("/api/withdraw", { method: "POST" });
-});
-        
-        // === НОВОСТИ ПРОЕКТА ===
-        // Просто добавляйте объекты в массив — они появятся на странице.
+        // ============================================================
+        // ДЕМО: смена скорости counter3 через 30 секунд после старта
+        // (удалите этот блок, если он не нужен)
+        // ============================================================
+        // setTimeout(() => {
+        //     changeSpeed(counter3, 0.00000001);
+        //     console.log("Скорость counter3 изменена на 0.00000001/сек");
+        // }, 30000);
+
+        // Запускаем анимацию
+        update();
+
+        // ============================================================
+        // НОВОСТИ ПРОЕКТА
+        // ============================================================
         const news = [
             {
                 date: "14.10.2026",
