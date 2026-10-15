@@ -58,9 +58,19 @@
         .counter.blue { color: #38bdf8; text-shadow: 0 0 20px #38bdf8; }
         .counter.white { color: #FFFDD0; text-shadow: 0 0 20px #FFFDD0; }
 
+        /* Ряд кнопок */
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            width: 100%;
+            max-width: 640px;
+        }
+
         .withdraw-btn {
-            min-width: 260px;
-            padding: 1.2rem 3rem;
+            flex: 1 1 260px;
+            padding: 1.2rem 2rem;
             background: linear-gradient(135deg, #ff3d71, #e11d74);
             color: #000;
             font-family: inherit;
@@ -80,6 +90,19 @@
             background: linear-gradient(135deg, #64748b, #475569);
             color: #1e293b;
             cursor: not-allowed;
+            box-shadow: none; filter: none; transform: none;
+        }
+
+        /* Стиль второй кнопки */
+        .finish-btn {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.5);
+        }
+        .finish-btn:hover { filter: brightness(1.1); }
+        .finish-btn:disabled {
+            background: linear-gradient(135deg, #334155, #1e293b);
+            color: #94a3b8;
             box-shadow: none; filter: none; transform: none;
         }
 
@@ -137,7 +160,10 @@
         <div class="counter white" id="counter3">0</div>
     </div>
 
-    <button class="withdraw-btn" id="withdrawBtn">Получить долю богатства</button>
+    <div class="btn-row">
+        <button class="withdraw-btn" id="withdrawBtn">Получить долю богатства</button>
+        <button class="withdraw-btn finish-btn" id="finishBtn">Вывести свой доход и завершить участие</button>
+    </div>
 
     <div class="news-box">
         <div class="news-title">Новости проекта</div>
@@ -230,9 +256,7 @@
         // ============================================================
         loadCounterState(counter3);
 
-        // Страховка №1: если кнопка уже нажата в прошлом,
-        // но startDate потерян (битый/отсутствующий state) —
-        // считаем, что отсчёт идёт с этого момента, и сохраняем.
+        // Страховка №1
         if (localStorage.getItem("withdrawn") === "1") {
             if (!counter3.active) {
                 counter3.active = true;
@@ -250,8 +274,7 @@
             const now = Date.now();
 
             for (const c of counters) {
-                // Страховка №2: активен, но точка отсчёта потерялась
-                // (например, state частично повреждён) — восстанавливаем.
+                // Страховка №2
                 if (c.active === true && c.startDate === null) {
                     c.startDate = now;
                     if (c.id) saveCounterState(c);
@@ -279,9 +302,15 @@
         update();
 
         // ============================================================
-        // КНОПКА
+        // КНОПКА "Получить долю богатства"
         // ============================================================
         const btn = document.getElementById("withdrawBtn");
+        const finishBtn = document.getElementById("finishBtn");
+
+        function setWithdrawBtnDefault() {
+            btn.textContent = "Получить долю богатства";
+            btn.disabled = false;
+        }
 
         if (localStorage.getItem("withdrawn") === "1") {
             btn.textContent = "Вам уже поступает доля Богатства.";
@@ -304,12 +333,46 @@
         });
 
         // ============================================================
-        // ДЕМО: смена скорости counter3 через 30 сек после старта
+        // КНОПКА "Вывести свой доход и завершить участие"
         // ============================================================
-        // setTimeout(() => {
-             changeSpeed(counter3, 0.00000000000902616);
-        //     console.log("Скорость counter3 изменена");
-        // }, 30000);
+        finishBtn.addEventListener("click", () => {
+            if (finishBtn.disabled) return;
+
+            // 1. Считываем текущее значение counter3
+            const now = Date.now();
+            let finalValue = counter3.baseValue;
+            if (counter3.active && counter3.startDate !== null) {
+                const secondsPassed = (now - counter3.startDate) / 1000;
+                finalValue = counter3.baseValue + counter3.perSecond * secondsPassed;
+            }
+
+            // 2. Обнуляем и останавливаем counter3
+            counter3.baseValue = 0;
+            counter3.startDate = null;
+            counter3.active = false;
+            saveCounterState(counter3);
+            counter3.el.textContent = (0).toLocaleString("ru-RU", {
+                minimumFractionDigits: counter3.digits,
+                maximumFractionDigits: counter3.digits
+            });
+
+            // 3. Возвращаем первую кнопку в исходное состояние
+            localStorage.removeItem("withdrawn");
+            setWithdrawBtnDefault();
+
+            // 4. Меняем текст и блокируем вторую кнопку
+            const formatted = finalValue.toLocaleString("ru-RU", {
+                minimumFractionDigits: counter3.digits,
+                maximumFractionDigits: counter3.digits
+            });
+            finishBtn.textContent = "Ваша доля равна " + formatted;
+            finishBtn.disabled = true;
+        });
+
+        // ============================================================
+        // ДЕМО: смена скорости counter3
+        // ============================================================
+        changeSpeed(counter3, 0.00000000000902616);
 
         // ============================================================
         // НОВОСТИ
