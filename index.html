@@ -174,6 +174,65 @@
         .news-item .news-text { color: #e2e8f0; }
         .news-item.new .news-text { color: #00ff88; }
 
+        /* ===== БЛОК "О ПРОЕКТЕ" ===== */
+        .about-box {
+            max-width: 640px;
+            max-height: none;
+        }
+
+        .about-content {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            line-height: 1.55;
+        }
+
+        .about-content p {
+            margin: 0 0 0.9rem;
+        }
+
+        .about-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .about-content strong {
+            color: #00ff88;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .about-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .about-content li {
+            position: relative;
+            padding-left: 1.2rem;
+            color: #e2e8f0;
+        }
+
+        .about-content li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        .about-content .accent {
+            color: #00ff88;
+        }
+
+        .about-content hr {
+            border: none;
+            border-top: 1px solid rgba(0, 255, 136, 0.15);
+            margin: 1rem 0;
+        }
+
         /* ===== МОДАЛЬНОЕ ОКНО ===== */
         .modal-overlay {
             position: fixed;
@@ -283,6 +342,12 @@
     <div class="news-box">
         <div class="news-title">Новости проекта</div>
         <ul class="news-list" id="newsList"></ul>
+    </div>
+
+    <!-- ===== БЛОК "О ПРОЕКТЕ" ===== -->
+    <div class="news-box about-box">
+        <div class="news-title">О проекте</div>
+        <div class="about-content" id="aboutContent"></div>
     </div>
 
     <!-- ===== МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ===== -->
@@ -747,6 +812,73 @@
         }
 
         renderNews();
+
+        // ============================================================
+        // БЛОК "О ПРОЕКТЕ"
+        // ============================================================
+        // Правила форматирования:
+        //   { type: "p",  html: "..." }           — абзац (можно <strong>, <span class="accent">)
+        //   { type: "ul", items: ["...", "..."] } — маркированный список
+        //   { type: "hr" }                        — тонкий разделитель
+        //
+        // Чтобы добавить/поправить текст — просто отредактируйте этот массив.
+
+        const aboutText = [
+            {
+                type: "p",
+                html: '<strong>Цель проекта</strong> — наглядно показать, как работает распределение общественного богатства между гражданами, и к каким последствиям приводит отказ от своей доли.'
+            },
+            {
+                type: "p",
+                html: '<strong>Правила:</strong>'
+            },
+            {
+                type: "ul",
+                items: [
+                    "Каждый участник имеет право на долю Богатства Страны.",
+                    "Доля начисляется автоматически после активации личного счёта.",
+                    "Вы можете вывести накопленный доход в любой момент.",
+                    "После вывода участие в текущем цикле завершается."
+                ]
+            },
+            { type: "hr" },
+            {
+                type: "p",
+                html: '<strong>Условия:</strong> повторное подключение к распределению возможно через период охлаждения. Ваучер, полученный ранее, сохраняет свою силу и не подлежит повторной выдаче.'
+            },
+            {
+                type: "p",
+                html: '<strong>Важно:</strong> проект носит <span class="accent">ознакомительный характер</span> и не является финансовым инструментом или инвестиционной программой.'
+            }
+        ];
+
+        function renderAbout() {
+            const box = document.getElementById("aboutContent");
+            if (!box) return;
+            box.innerHTML = "";
+
+            for (const block of aboutText) {
+                if (block.type === "p") {
+                    const p = document.createElement("p");
+                    p.innerHTML = block.html;
+                    box.appendChild(p);
+
+                } else if (block.type === "ul") {
+                    const ul = document.createElement("ul");
+                    for (const item of block.items) {
+                        const li = document.createElement("li");
+                        li.textContent = item;
+                        ul.appendChild(li);
+                    }
+                    box.appendChild(ul);
+
+                } else if (block.type === "hr") {
+                    box.appendChild(document.createElement("hr"));
+                }
+            }
+        }
+
+        renderAbout();
     </script>
 </body>
 </html>
