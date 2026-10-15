@@ -58,7 +58,6 @@
         .counter.blue { color: #38bdf8; text-shadow: 0 0 20px #38bdf8; }
         .counter.white { color: #FFFDD0; text-shadow: 0 0 20px #FFFDD0; }
 
-        /* Ряд кнопок */
         .btn-row {
             display: flex;
             flex-wrap: wrap;
@@ -93,7 +92,6 @@
             box-shadow: none; filter: none; transform: none;
         }
 
-        /* Стиль второй кнопки */
         .finish-btn {
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: #fff;
@@ -190,11 +188,11 @@
             {
                 el: document.getElementById("counter3"),
                 baseValue: 0,
-                startDate: null,        // стартует только после клика
+                startDate: null,
                 perSecond: 0.00000000000867651,
                 digits: 10,
-                active: false,          // пока не активен — показываем baseValue
-                id: "counter3"          // ключ для localStorage
+                active: false,
+                id: "counter3"
             }
         ];
 
@@ -233,7 +231,7 @@
         }
 
         // ============================================================
-        // ФУНКЦИЯ СМЕНЫ СКОРОСТИ (со снимком текущего значения)
+        // ФУНКЦИЯ СМЕНЫ СКОРОСТИ
         // ============================================================
         function changeSpeed(c, newSpeed) {
             if (!c.active || c.startDate === null) {
@@ -256,7 +254,6 @@
         // ============================================================
         loadCounterState(counter3);
 
-        // Страховка №1
         if (localStorage.getItem("withdrawn") === "1") {
             if (!counter3.active) {
                 counter3.active = true;
@@ -274,7 +271,6 @@
             const now = Date.now();
 
             for (const c of counters) {
-                // Страховка №2
                 if (c.active === true && c.startDate === null) {
                     c.startDate = now;
                     if (c.id) saveCounterState(c);
@@ -302,7 +298,7 @@
         update();
 
         // ============================================================
-        // КНОПКА "Получить долю богатства"
+        // КНОПКИ
         // ============================================================
         const btn = document.getElementById("withdrawBtn");
         const finishBtn = document.getElementById("finishBtn");
@@ -312,24 +308,40 @@
             btn.disabled = false;
         }
 
-        if (localStorage.getItem("withdrawn") === "1") {
+        function setWithdrawBtnActive() {
             btn.textContent = "Вам уже поступает доля Богатства.";
             btn.disabled = true;
+        }
+
+        // --- Восстановление состояния кнопки "Получить долю" ---
+        if (localStorage.getItem("withdrawn") === "1") {
+            setWithdrawBtnActive();
+        } else {
+            setWithdrawBtnDefault();
+        }
+
+        // --- Восстановление состояния кнопки "Вывести доход" ---
+        const finishValueRaw = localStorage.getItem("finishValue");
+        if (finishValueRaw !== null) {
+            const finishValue = parseFloat(finishValueRaw);
+            const formatted = finishValue.toLocaleString("ru-RU", {
+                minimumFractionDigits: counter3.digits,
+                maximumFractionDigits: counter3.digits
+            });
+            finishBtn.textContent = "Ваша доля равна " + formatted;
+            finishBtn.disabled = true;
         }
 
         btn.addEventListener("click", () => {
             if (btn.disabled) return;
 
-            btn.textContent = "Поздравляем! Теперь Вы получаете долю Богатства.";
-            btn.disabled = true;
+            setWithdrawBtnActive();
 
             counter3.startDate = Date.now();
             counter3.active = true;
 
             localStorage.setItem("withdrawn", "1");
             saveCounterState(counter3);
-
-            // fetch("/api/withdraw", { method: "POST" });
         });
 
         // ============================================================
@@ -360,7 +372,9 @@
             localStorage.removeItem("withdrawn");
             setWithdrawBtnDefault();
 
-            // 4. Меняем текст и блокируем вторую кнопку
+            // 4. Сохраняем и фиксируем значение на второй кнопке
+            localStorage.setItem("finishValue", String(finalValue));
+
             const formatted = finalValue.toLocaleString("ru-RU", {
                 minimumFractionDigits: counter3.digits,
                 maximumFractionDigits: counter3.digits
@@ -410,4 +424,4 @@
         renderNews();
     </script>
 </body>
-</html>
+</html>           
