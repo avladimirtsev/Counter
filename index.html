@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Счётчик прироста богатства</title>
     <style>
-        /* === ФОН: АНИМИРОВАННЫЙ ГРАДИЕНТ === */
         body {
             background: linear-gradient(-45deg, #0f172a, #1e3a5f, #00ff88, #0f172a);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
-
-            /* === ОФОРМЛЕНИЕ СЧЁТЧИКА === */
             color: #00ff88;
             font-family: 'Courier New', monospace;
             display: flex;
@@ -50,7 +47,6 @@
             text-transform: uppercase;
             color: #94a3b8;
             margin-bottom: 0.5rem;
-            text-shadow: none;
         }
 
         .counter {
@@ -59,14 +55,8 @@
             font-variant-numeric: tabular-nums;
         }
 
-        .counter.blue {
-            color: #38bdf8;
-            text-shadow: 0 0 20px #38bdf8;
-        }
-        .counter.white {
-            color: #FFFDD0;
-            text-shadow: 0 0 20px #FFFDD0;
-        }
+        .counter.blue { color: #38bdf8; text-shadow: 0 0 20px #38bdf8; }
+        .counter.white { color: #FFFDD0; text-shadow: 0 0 20px #FFFDD0; }
 
         .withdraw-btn {
             min-width: 260px;
@@ -84,17 +74,13 @@
             box-shadow: 0 0 25px rgba(255, 61, 113, 0.5);
             transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease, background 0.3s ease;
         }
-
         .withdraw-btn:hover { filter: brightness(1.1); }
         .withdraw-btn:active { transform: scale(0.97); }
-
         .withdraw-btn:disabled {
             background: linear-gradient(135deg, #64748b, #475569);
             color: #1e293b;
             cursor: not-allowed;
-            box-shadow: none;
-            filter: none;
-            transform: none;
+            box-shadow: none; filter: none; transform: none;
         }
 
         .news-box {
@@ -122,34 +108,17 @@
 
         .news-list {
             list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0.9rem;
+            padding: 0; margin: 0;
+            display: flex; flex-direction: column; gap: 0.9rem;
         }
 
-        .news-item {
-            color: #cbd5e1;
-            font-size: 0.9rem;
-            line-height: 1.45;
-        }
-
+        .news-item { color: #cbd5e1; font-size: 0.9rem; line-height: 1.45; }
         .news-item .news-date {
-            display: block;
-            color: #64748b;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            margin-bottom: 0.2rem;
+            display: block; color: #64748b; font-size: 0.75rem;
+            letter-spacing: 1px; margin-bottom: 0.2rem;
         }
-
-        .news-item .news-text {
-            color: #e2e8f0;
-        }
-
-        .news-item.new .news-text {
-            color: #00ff88;
-        }
+        .news-item .news-text { color: #e2e8f0; }
+        .news-item.new .news-text { color: #00ff88; }
     </style>
 </head>
 <body>
@@ -170,7 +139,6 @@
 
     <button class="withdraw-btn" id="withdrawBtn">Получить долю богатства</button>
 
-    <!-- === БЛОК НОВОСТЕЙ === -->
     <div class="news-box">
         <div class="news-title">Новости проекта</div>
         <ul class="news-list" id="newsList"></ul>
@@ -204,42 +172,10 @@
             }
         ];
 
-        const counter3 = counters[2];  // ссылка для удобства
+        const counter3 = counters[2];
 
         // ============================================================
-        // ФУНКЦИЯ СМЕНЫ СКОРОСТИ (со снимком текущего значения)
-        // ============================================================
-        /**
-         * Меняет скорость счётчика, фиксируя уже накопленное значение.
-         * Прошлый рост «замораживается» в baseValue, новая точка отсчёта — «сейчас».
-         * @param {object} c          - объект счётчика
-         * @param {number} newSpeed   - новая скорость (единиц в секунду)
-         */
-        function changeSpeed(c, newSpeed) {
-            // Если счётчик ещё не активен — фиксировать нечего,
-            // просто меняем скорость на будущее.
-            if (!c.active || c.startDate === null) {
-                c.perSecond = newSpeed;
-                if (c.id) saveCounterState(c);
-                return;
-            }
-
-            const now = Date.now();
-            const secondsPassed = (now - c.startDate) / 1000;
-
-            // 1. Фиксируем текущее значение как новый baseValue
-            c.baseValue = c.baseValue + c.perSecond * secondsPassed;
-            // 2. Новая точка отсчёта
-            c.startDate = now;
-            // 3. Применяем новую скорость
-            c.perSecond = newSpeed;
-
-            // 4. Сохраняем обновлённое состояние
-            if (c.id) saveCounterState(c);
-        }
-
-        // ============================================================
-        // СОХРАНЕНИЕ / ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ counter3
+        // СОХРАНЕНИЕ / ВОССТАНОВЛЕНИЕ
         // ============================================================
         function saveCounterState(c) {
             try {
@@ -271,13 +207,56 @@
         }
 
         // ============================================================
+        // ФУНКЦИЯ СМЕНЫ СКОРОСТИ (со снимком текущего значения)
+        // ============================================================
+        function changeSpeed(c, newSpeed) {
+            if (!c.active || c.startDate === null) {
+                c.perSecond = newSpeed;
+                if (c.id) saveCounterState(c);
+                return;
+            }
+
+            const now = Date.now();
+            const secondsPassed = (now - c.startDate) / 1000;
+            c.baseValue = c.baseValue + c.perSecond * secondsPassed;
+            c.startDate = now;
+            c.perSecond = newSpeed;
+
+            if (c.id) saveCounterState(c);
+        }
+
+        // ============================================================
+        // ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ — ДО первого update()
+        // ============================================================
+        loadCounterState(counter3);
+
+        // Страховка №1: если кнопка уже нажата в прошлом,
+        // но startDate потерян (битый/отсутствующий state) —
+        // считаем, что отсчёт идёт с этого момента, и сохраняем.
+        if (localStorage.getItem("withdrawn") === "1") {
+            if (!counter3.active) {
+                counter3.active = true;
+            }
+            if (counter3.startDate === null) {
+                counter3.startDate = Date.now();
+            }
+            saveCounterState(counter3);
+        }
+
+        // ============================================================
         // ОБНОВЛЕНИЕ СЧЁТЧИКОВ
         // ============================================================
         function update() {
             const now = Date.now();
 
             for (const c of counters) {
-                // Если счётчик ещё не активирован — показываем базовое значение
+                // Страховка №2: активен, но точка отсчёта потерялась
+                // (например, state частично повреждён) — восстанавливаем.
+                if (c.active === true && c.startDate === null) {
+                    c.startDate = now;
+                    if (c.id) saveCounterState(c);
+                }
+
                 if (c.active === false || c.startDate === null) {
                     c.el.textContent = c.baseValue.toLocaleString("ru-RU", {
                         minimumFractionDigits: c.digits,
@@ -297,16 +276,13 @@
 
             requestAnimationFrame(update);
         }
+        update();
 
         // ============================================================
-        // КНОПКА "ПОЛУЧИТЬ ДОЛЮ БОГАТСТВА"
+        // КНОПКА
         // ============================================================
         const btn = document.getElementById("withdrawBtn");
 
-        // Сначала пытаемся восстановить состояние counter3 из localStorage
-        loadCounterState(counter3);
-
-        // Если пользователь уже нажимал кнопку — блокируем её
         if (localStorage.getItem("withdrawn") === "1") {
             btn.textContent = "Вам уже поступает доля Богатства.";
             btn.disabled = true;
@@ -318,49 +294,30 @@
             btn.textContent = "Поздравляем! Теперь Вы получаете долю Богатства.";
             btn.disabled = true;
 
-            // Запускаем третий счётчик с текущего момента
             counter3.startDate = Date.now();
             counter3.active = true;
-            // baseValue и perSecond берутся из восстановленного состояния
-            // (или дефолтные, если это первый клик)
 
-            // Сохраняем состояния
             localStorage.setItem("withdrawn", "1");
             saveCounterState(counter3);
 
-            // Здесь можно отправить данные на сервер:
             // fetch("/api/withdraw", { method: "POST" });
         });
 
         // ============================================================
-        // ДЕМО: смена скорости counter3 через 30 секунд после старта
-        // (удалите этот блок, если он не нужен)
+        // ДЕМО: смена скорости counter3 через 30 сек после старта
         // ============================================================
         // setTimeout(() => {
         //     changeSpeed(counter3, 0.00000001);
-        //     console.log("Скорость counter3 изменена на 0.00000001/сек");
+        //     console.log("Скорость counter3 изменена");
         // }, 30000);
 
-        // Запускаем анимацию
-        update();
-
         // ============================================================
-        // НОВОСТИ ПРОЕКТА
+        // НОВОСТИ
         // ============================================================
         const news = [
-            {
-                date: "14.10.2026",
-                text: "Подключение личного счета.",
-                isNew: true
-            },
-            {
-                date: "13.10.2026",
-                text: "Подключение новой страны - Россия🇷🇺."
-            },
-            {
-                date: "13.10.2026",
-                text: "⚡️Запуск проекта. Владимир Владимирович передал Проекту свои 1000₽💰 и пожелал роста🌱"
-            }
+            { date: "14.10.2026", text: "Подключение личного счета.", isNew: true },
+            { date: "13.10.2026", text: "Подключение новой страны - Россия🇷🇺." },
+            { date: "13.10.2026", text: "⚡️Запуск проекта. Владимир Владимирович передал Проекту свои 1000₽💰 и пожелал роста🌱" }
         ];
 
         function renderNews() {
