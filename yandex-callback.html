@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Вспомогательная страница</title>
+    <!-- Подключаем скрипт, который отправит токен обратно на главную страницу -->
+    <script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-token-with-polyfills-latest.js"></script>
+</head>
+<body>
+    <script>
+        // При загрузке страницы отправляем токен на origin вашего основного сайта
+        window.onload = function() {
+            // Замените на origin вашего основного сайта (протокол + домен + порт)
+            // Этот адрес должен совпадать с YANDEX_CALLBACK_ORIGIN в основном файле
+            window.YaSendSuggestToken(
+                'https://ваш-сайт.ru', // Origin основного сайта
+                { flag: true } // Дополнительные данные (необязательно)
+            );
+        };
+    </script>
+</body>
+</html>
