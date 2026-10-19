@@ -4,13 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Счётчик прироста богатства</title>
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            /* Палитра */
+            --bg:            #0e1420;
+            --bg-elev:       #172033;
+            --bg-elev-2:     #1e2942;
+            --border:        rgba(148, 163, 184, 0.14);
+            --text:          #e6edf6;
+            --text-dim:      #94a3b8;
+            --text-soft:     #cbd5e1;
+            --accent:        #34d399;   /* изумрудный */
+            --accent-2:      #60a5fa;   /* голубой */
+            --accent-warm:   #fbbf24;   /* янтарный для ваучера */
+            --danger:        #f43f5e;
+        }
+
+        * { box-sizing: border-box; }
+
         body {
-            background: linear-gradient(-45deg, #0f172a, #1e3a5f, #00ff88, #0f172a);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
-            color: #00ff88;
-            font-family: 'Courier New', monospace;
+            background:
+                radial-gradient(1200px 600px at 50% -10%, #1a2540 0%, transparent 60%),
+                var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Courier New', monospace;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
@@ -19,49 +38,76 @@
             min-height: 100vh;
             min-height: 100dvh;
             margin: 0;
-            padding: 3rem 1rem 2rem;
+            padding: 2rem 1rem 3rem;
             overflow-x: hidden;
             overflow-y: auto;
+            -webkit-font-smoothing: antialiased;
         }
 
         body.modal-open { overflow: hidden; }
 
-        @keyframes gradientShift {
-            0%   { background-position: 0% 50%; }
-            50%  { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
+        /* ===== КАРТОЧКИ-СЧЁТЧИКИ ===== */
         .counter-box {
             display: flex;
             flex-direction: column;
             align-items: center;
-            background: rgba(15, 23, 42, 0.6);
+            background: linear-gradient(180deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+            border: 1px solid var(--border);
             padding: 1.5rem 3rem;
-            border-radius: 16px;
-            backdrop-filter: blur(4px);
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
             min-width: 260px;
         }
 
+        /* ===== ИНДИКАТОР СУТОЧНОГО ПРИРОСТА ===== */
+        .counter-box-wealth { position: relative; }
+
+        .daily-gain {
+            position: absolute;
+            top: 0.55rem;
+            right: 0.75rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            color: var(--danger);
+            text-shadow: 0 0 10px rgba(244, 63, 94, 0.35);
+            opacity: 0.9;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        .daily-gain:empty { display: none; }
+
         .counter-label {
-            font-size: 1rem;
-            letter-spacing: 2px;
+            font-size: 0.85rem;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            color: #94a3b8;
-            margin-bottom: 0.5rem;
+            color: var(--text-dim);
+            margin-bottom: 0.6rem;
+            font-weight: 600;
         }
 
         .counter {
-            font-size: 2.2rem;
-            text-shadow: 0 0 20px #00ff88;
+            font-size: 2.1rem;
+            font-weight: 700;
             font-variant-numeric: tabular-nums;
             word-break: break-all;
             text-align: center;
+            color: var(--accent);
+            text-shadow: 0 0 18px rgba(52, 211, 153, 0.35);
+            letter-spacing: 0.5px;
         }
 
-        .counter.blue { color: #38bdf8; text-shadow: 0 0 20px #38bdf8; }
-        .counter.white { color: #FFFDD0; text-shadow: 0 0 20px #FFFDD0; }
+        .counter.blue {
+            color: var(--accent-2);
+            text-shadow: 0 0 18px rgba(96, 165, 250, 0.35);
+        }
 
+        .counter.white {
+            color: #fde68a;
+            text-shadow: 0 0 18px rgba(253, 230, 138, 0.3);
+        }
+
+        /* ===== КНОПКИ ===== */
         .btn-row {
             display: flex;
             flex-wrap: wrap;
@@ -73,35 +119,37 @@
 
         .withdraw-btn {
             flex: 1 1 260px;
-            padding: 1.2rem 2rem;
-            background: linear-gradient(135deg, #ff3d71, #e11d74);
-            color: #000;
+            padding: 1.15rem 2rem;
+            background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
+            color: #fff;
             font-family: inherit;
-            font-size: 1.1rem;
-            font-weight: bold;
-            letter-spacing: 2px;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
             border: none;
-            border-radius: 16px;
+            border-radius: 14px;
             cursor: pointer;
-            box-shadow: 0 0 25px rgba(255, 61, 113, 0.5);
-            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease, background 0.3s ease;
+            box-shadow: 0 8px 24px rgba(244, 63, 94, 0.28);
+            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease, background 0.3s ease;
         }
-        .withdraw-btn:hover { filter: brightness(1.1); }
-        .withdraw-btn:active { transform: scale(0.97); }
+        .withdraw-btn:hover { filter: brightness(1.08); box-shadow: 0 10px 28px rgba(244, 63, 94, 0.4); }
+        .withdraw-btn:active { transform: scale(0.98); }
         .withdraw-btn:disabled {
-            background: linear-gradient(135deg, #64748b, #475569);
-            color: #1e293b;
+            background: linear-gradient(135deg, #334155, #1e293b);
+            color: #94a3b8;
             cursor: not-allowed;
-            box-shadow: none; filter: none; transform: none;
+            box-shadow: none;
+            filter: none;
+            transform: none;
         }
 
         .finish-btn {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
             color: #fff;
-            box-shadow: 0 0 25px rgba(139, 92, 246, 0.5);
+            box-shadow: 0 8px 24px rgba(124, 58, 237, 0.28);
         }
-        .finish-btn:hover { filter: brightness(1.1); }
+        .finish-btn:hover { filter: brightness(1.08); box-shadow: 0 10px 28px rgba(124, 58, 237, 0.4); }
         .finish-btn:disabled {
             background: linear-gradient(135deg, #334155, #1e293b);
             color: #94a3b8;
@@ -113,66 +161,86 @@
             display: none;
             width: 100%;
             max-width: 640px;
-            padding: 1.1rem 2rem;
-            background: linear-gradient(135deg, #facc15, #f59e0b);
-            color: #1e293b;
+            padding: 1.05rem 2rem;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #1f2937;
             font-family: inherit;
-            font-size: 1rem;
-            font-weight: bold;
+            font-size: 0.95rem;
+            font-weight: 800;
             letter-spacing: 1.5px;
             text-transform: uppercase;
             border: none;
-            border-radius: 16px;
+            border-radius: 14px;
             cursor: pointer;
-            box-shadow: 0 0 25px rgba(250, 204, 21, 0.45);
-            transition: transform 0.15s ease, filter 0.15s ease;
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.28);
+            transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.2s ease;
             animation: voucherIn 0.3s ease;
         }
         .voucher-btn.show { display: block; }
-        .voucher-btn:hover { filter: brightness(1.08); }
-        .voucher-btn:active { transform: scale(0.97); }
+        .voucher-btn:hover { filter: brightness(1.05); box-shadow: 0 10px 28px rgba(245, 158, 11, 0.4); }
+        .voucher-btn:active { transform: scale(0.98); }
 
         @keyframes voucherIn {
             from { transform: translateY(-8px); opacity: 0; }
             to   { transform: translateY(0);    opacity: 1; }
         }
 
+        /* ===== ИНФО-БОКСЫ (новости, о проекте) ===== */
         .news-box {
             min-width: 260px;
             max-width: 300px;
-            max-height: 300px;
+            max-height: 320px;
             overflow-y: auto;
             width: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            padding: 1.5rem 2rem;
+            background: linear-gradient(180deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+            border: 1px solid var(--border);
+            padding: 1.4rem 1.6rem;
             border-radius: 16px;
-            backdrop-filter: blur(4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             text-align: left;
         }
 
+        /* Скроллбар */
+        .news-box::-webkit-scrollbar { width: 6px; }
+        .news-box::-webkit-scrollbar-track { background: transparent; }
+        .news-box::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.25);
+            border-radius: 3px;
+        }
+        .news-box::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.45); }
+
         .news-title {
-            font-size: 0.9rem;
-            letter-spacing: 2px;
+            font-size: 0.85rem;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            color: #94a3b8;
+            color: var(--text-dim);
+            font-weight: 600;
             margin-bottom: 1rem;
-            padding-bottom: 0.6rem;
-            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+            padding-bottom: 0.7rem;
+            border-bottom: 1px solid var(--border);
         }
 
         .news-list {
             list-style: none;
             padding: 0; margin: 0;
-            display: flex; flex-direction: column; gap: 0.9rem;
+            display: flex; flex-direction: column; gap: 1rem;
         }
 
-        .news-item { color: #cbd5e1; font-size: 0.9rem; line-height: 1.45; }
-        .news-item .news-date {
-            display: block; color: #64748b; font-size: 0.75rem;
-            letter-spacing: 1px; margin-bottom: 0.2rem;
+        .news-item {
+            color: var(--text-soft);
+            font-size: 0.9rem;
+            line-height: 1.5;
         }
-        .news-item .news-text { color: #e2e8f0; }
-        .news-item.new .news-text { color: #00ff88; }
+        .news-item .news-date {
+            display: block;
+            color: #7d8aa0;
+            font-size: 0.72rem;
+            letter-spacing: 1.2px;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+        }
+        .news-item .news-text { color: var(--text-soft); }
+        .news-item.new .news-text { color: #a7f3d0; }
 
         /* ===== БЛОК "О ПРОЕКТЕ" ===== */
         .about-box {
@@ -181,23 +249,18 @@
         }
 
         .about-content {
-            color: #cbd5e1;
+            color: var(--text-soft);
             font-size: 0.9rem;
-            line-height: 1.55;
+            line-height: 1.6;
         }
 
-        .about-content p {
-            margin: 0 0 0.9rem;
-        }
-
-        .about-content p:last-child {
-            margin-bottom: 0;
-        }
+        .about-content p { margin: 0 0 0.9rem; }
+        .about-content p:last-child { margin-bottom: 0; }
 
         .about-content strong {
-            color: #00ff88;
-            font-weight: bold;
-            letter-spacing: 0.5px;
+            color: var(--accent);
+            font-weight: 700;
+            letter-spacing: 0.4px;
         }
 
         .about-content ul {
@@ -206,39 +269,36 @@
             margin: 0 0 0.9rem;
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
+            gap: 0.5rem;
         }
 
         .about-content li {
             position: relative;
-            padding-left: 1.2rem;
-            color: #e2e8f0;
+            padding-left: 1.25rem;
+            color: var(--text-soft);
         }
-
         .about-content li::before {
             content: "▸";
             position: absolute;
             left: 0;
-            color: #38bdf8;
-            font-weight: bold;
+            color: var(--accent-2);
+            font-weight: 700;
         }
 
-        .about-content .accent {
-            color: #00ff88;
-        }
+        .about-content .accent { color: var(--accent); }
 
         .about-content hr {
             border: none;
-            border-top: 1px solid rgba(0, 255, 136, 0.15);
-            margin: 1rem 0;
+            border-top: 1px solid var(--border);
+            margin: 1.1rem 0;
         }
 
         /* ===== МОДАЛЬНОЕ ОКНО ===== */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(2, 6, 23, 0.85);
-            backdrop-filter: blur(6px);
+            background: rgba(8, 12, 20, 0.75);
+            backdrop-filter: blur(8px);
             display: none;
             justify-content: center;
             align-items: center;
@@ -248,16 +308,16 @@
         .modal-overlay.show { display: flex; }
 
         .modal {
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid rgba(139, 92, 246, 0.4);
+            background: linear-gradient(180deg, #1b2540 0%, #131b2e 100%);
+            border: 1px solid rgba(124, 58, 237, 0.35);
             border-radius: 20px;
-            padding: 2rem 2rem 1.5rem;
+            padding: 2rem 2rem 1.6rem;
             max-width: 560px;
             width: 100%;
-            box-shadow: 0 0 40px rgba(139, 92, 246, 0.35);
-            color: #e2e8f0;
-            font-size: 1rem;
-            line-height: 1.55;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55);
+            color: var(--text);
+            font-size: 0.98rem;
+            line-height: 1.6;
             animation: modalIn 0.25s ease;
         }
         @keyframes modalIn {
@@ -265,15 +325,13 @@
             to   { transform: translateY(0);    opacity: 1; }
         }
 
-        .modal-text {
-            margin-bottom: 1.5rem;
-        }
-        .modal-text .accent { color: #00ff88; }
+        .modal-text { margin-bottom: 1.5rem; color: var(--text-soft); }
+        .modal-text .accent { color: var(--accent); font-weight: 700; }
 
         .modal-question {
             font-size: 1.1rem;
-            font-weight: bold;
-            color: #a78bfa;
+            font-weight: 700;
+            color: #c4b5fd;
             letter-spacing: 1px;
             margin-bottom: 1.5rem;
             text-align: center;
@@ -289,9 +347,9 @@
             flex: 1 1 120px;
             padding: 0.9rem 1.5rem;
             font-family: inherit;
-            font-size: 1rem;
-            font-weight: bold;
-            letter-spacing: 2px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
             border: none;
             border-radius: 12px;
@@ -301,24 +359,25 @@
         .modal-actions button:active { transform: scale(0.97); }
 
         .modal-yes {
-            background: linear-gradient(135deg, #ff3d71, #e11d74);
-            color: #000;
-            box-shadow: 0 0 20px rgba(255, 61, 113, 0.5);
+            background: linear-gradient(135deg, #f43f5e, #be123c);
+            color: #fff;
+            box-shadow: 0 8px 22px rgba(244, 63, 94, 0.3);
         }
-        .modal-yes:hover { filter: brightness(1.1); }
+        .modal-yes:hover { filter: brightness(1.08); }
 
         .modal-no {
             background: linear-gradient(135deg, #334155, #1e293b);
-            color: #cbd5e1;
-            box-shadow: 0 0 20px rgba(51, 65, 85, 0.5);
+            color: #e2e8f0;
+            box-shadow: 0 8px 22px rgba(51, 65, 85, 0.3);
         }
-        .modal-no:hover { filter: brightness(1.2); }
+        .modal-no:hover { filter: brightness(1.15); }
     </style>
 </head>
 <body>
-    <div class="counter-box">
+    <div class="counter-box counter-box-wealth">
         <div class="counter-label">Богатство Страны</div>
         <div class="counter" id="counter1">0</div>
+        <div class="daily-gain" id="dailyGain1"></div>
     </div>
 
     <div class="counter-box">
@@ -368,12 +427,52 @@
     </div>
 
     <script>
+        // ============================================================
+        // ИНИЦИАЛИЗАЦИЯ TELEGRAM MINI APP
+        // ============================================================
+        const tg = window.Telegram?.WebApp;
+
+        // Переменная для идентификатора пользователя Telegram
+        let USER_ID = null;
+        let telegramUser = null;
+
+        if (tg) {
+            // Сообщаем Telegram, что приложение загружено
+            tg.ready();
+            // Разворачиваем на весь экран
+            tg.expand();
+
+            // Получаем данные пользователя (без всякой авторизации!)
+            telegramUser = tg.initDataUnsafe?.user;
+
+            if (telegramUser) {
+                USER_ID = "tg_" + telegramUser.id;
+                console.log("Telegram user:", telegramUser.first_name, telegramUser.id);
+            } else {
+                console.warn("Открыто вне Telegram. Используем локальный аккаунт.");
+            }
+        } else {
+            console.warn("Telegram WebApp SDK не загружен. Открыто вне Telegram.");
+        }
+
         // === КЛЮЧИ LOCALSTORAGE ===
         const LS_KEYS = {
             withdrawn: "withdrawn",
             finishValue: "finishValue",
-            cooldownUntil: "cooldownUntil"
+            cooldownUntil: "cooldownUntil",
+            counter3SpeedVersion: "counter3_speed_version"
         };
+
+        // ============================================================
+        // НАСТРОЙКА СКОРОСТИ COUNTER3
+        // ============================================================
+        // Чтобы изменить скорость прироста "Ваш Базовый Доход":
+        //   1) поменяйте значение COUNTER3_NEW_SPEED
+        //   2) увеличьте COUNTER3_SPEED_VERSION (например "v1" -> "v2")
+        // Накопленный прогресс при этом НЕ потеряется: перед сменой скорости
+        // он фиксируется в baseValue, и новая скорость прибавляется уже к нему.
+        const COUNTER3_SPEED_VERSION = "v2";                 // меняйте при каждой смене скорости
+        const COUNTER3_NEW_SPEED = 0.00000000000825563326;   // единиц в секунду
 
         // === НАСТРОЙКИ СЧЁТЧИКОВ ===
         const counters = [
@@ -399,8 +498,8 @@
                 el: document.getElementById("counter3"),
                 baseValue: 0,
                 startDate: null,
-                // Скорость из расчета 100 в сутки
-                perSecond: 0.000000000008093767,
+                // Дефолт для новых пользователей (совпадает с COUNTER3_NEW_SPEED)
+                perSecond: COUNTER3_NEW_SPEED,
                 digits: 10,
                 active: false,
                 id: "counter3"
@@ -409,8 +508,33 @@
 
         const counter3 = counters[2];
 
-        // Длительность периода охлаждения (10 минут)
-        const COOLDOWN_MS = 10 * 60 * 1000;
+        // Длительность периода охлаждения (120 минут)
+        const COOLDOWN_MS = 120 * 60 * 1000;
+
+        // ============================================================
+        // СУТОЧНЫЙ ПРИРОСТ COUNTER1
+        // ============================================================
+        // Прирост за прошедшие сутки = perSecond * секунд в сутках.
+        // Выводим мелким красным шрифтом в правом верхнем углу карточки.
+        const SECONDS_PER_DAY = 24 * 60 * 60;
+
+        // ============================================================
+        // ПРОСТРАНСТВО ИМЁН ДЛЯ LOCALSTORAGE
+        // ============================================================
+        function userKey(key) {
+            // Если открыто в Telegram — используем Telegram ID
+            if (USER_ID) {
+                return USER_ID + "_" + key;
+            }
+            // Иначе — обычный (не-ID) ключ. Локальная авторизация в этом коде больше не используется.
+            return key;
+        }
+
+        const userStorage = {
+            getItem(k)    { return localStorage.getItem(userKey(k)); },
+            setItem(k, v) { return localStorage.setItem(userKey(k), v); },
+            removeItem(k) { return localStorage.removeItem(userKey(k)); }
+        };
 
         // ============================================================
         // СОХРАНЕНИЕ / ВОССТАНОВЛЕНИЕ
@@ -418,7 +542,7 @@
         function saveCounterState(c) {
             if (!c.id) return;
             try {
-                localStorage.setItem(c.id + "_state", JSON.stringify({
+                userStorage.setItem(c.id + "_state", JSON.stringify({
                     baseValue: c.baseValue,
                     startDate: c.startDate,
                     perSecond: c.perSecond,
@@ -431,7 +555,7 @@
 
         function loadCounterState(c) {
             if (!c.id) return;
-            const raw = localStorage.getItem(c.id + "_state");
+            const raw = userStorage.getItem(c.id + "_state");
             if (!raw) return;
             try {
                 const s = JSON.parse(raw);
@@ -456,15 +580,17 @@
         }
 
         // ============================================================
-        // ФУНКЦИЯ СМЕНЫ СКОРОСТИ
+        // ФУНКЦИЯ СМЕНЫ СКОРОСТИ (с сохранением накопленного)
         // ============================================================
         function changeSpeed(c, newSpeed) {
             if (!c.active || c.startDate === null) {
+                // Счётчик не идёт — просто меняем скорость
                 c.perSecond = newSpeed;
                 saveCounterState(c);
                 return;
             }
 
+            // Фиксируем накопленное по СТАРОЙ скорости в baseValue
             const now = Date.now();
             const secondsPassed = (now - c.startDate) / 1000;
             c.baseValue = c.baseValue + c.perSecond * secondsPassed;
@@ -481,7 +607,7 @@
         loadCounterState(counter2);
         loadCounterState(counter3);
 
-        if (localStorage.getItem(LS_KEYS.withdrawn) === "1") {
+        if (userStorage.getItem(LS_KEYS.withdrawn) === "1") {
             if (!counter3.active) {
                 counter3.active = true;
             }
@@ -492,6 +618,19 @@
         }
 
         // ============================================================
+        // МИГРАЦИЯ СКОРОСТИ COUNTER3
+        // ============================================================
+        // Применяется один раз при смене версии скорости.
+        // Накопленное значение сохраняется, новая скорость прибавляется к нему.
+        (function migrateCounter3Speed() {
+            const savedVersion = userStorage.getItem(LS_KEYS.counter3SpeedVersion);
+            if (savedVersion === COUNTER3_SPEED_VERSION) return;
+
+            changeSpeed(counter3, COUNTER3_NEW_SPEED);
+            userStorage.setItem(LS_KEYS.counter3SpeedVersion, COUNTER3_SPEED_VERSION);
+        })();
+
+        // ============================================================
         // ОБНОВЛЕНИЕ СЧЁТЧИКОВ
         // ============================================================
         function formatNumber(value, digits) {
@@ -499,6 +638,24 @@
                 minimumFractionDigits: digits,
                 maximumFractionDigits: digits
             });
+        }
+
+        // Суточный прирост counter1 — мелкий красный индикатор в правом верхнем углу
+        function renderDailyGain() {
+            const el = document.getElementById("dailyGain1");
+            if (!el) return;
+
+            const c = counters[0];
+            if (!c.active || typeof c.perSecond !== "number") {
+                el.textContent = "";
+                return;
+            }
+
+            const gain = c.perSecond * SECONDS_PER_DAY;
+            const sign = gain >= 0 ? "+" : "−";
+            const abs = Math.abs(gain);
+
+            el.textContent = sign + formatNumber(abs, 4) + " за прошлые сутки";
         }
 
         function update() {
@@ -515,6 +672,10 @@
 
                 c.el.textContent = formatNumber(getCurrentValue(c), c.digits);
             }
+
+            // Рекомендованный вариант: индикатор пересчитывается каждый тик,
+            // поэтому остаётся корректным даже после changeSpeed()/миграции.
+            renderDailyGain();
         }
 
         setInterval(update, 250);
@@ -534,7 +695,7 @@
         // ПЕРИОД ОХЛАЖДЕНИЯ
         // ============================================================
         function getCooldownUntil() {
-            const raw = localStorage.getItem(LS_KEYS.cooldownUntil);
+            const raw = userStorage.getItem(LS_KEYS.cooldownUntil);
             if (!raw) return 0;
             const v = parseInt(raw, 10);
             return isNaN(v) ? 0 : v;
@@ -542,9 +703,9 @@
 
         function setCooldownUntil(ts) {
             if (ts && ts > Date.now()) {
-                localStorage.setItem(LS_KEYS.cooldownUntil, String(ts));
+                userStorage.setItem(LS_KEYS.cooldownUntil, String(ts));
             } else {
-                localStorage.removeItem(LS_KEYS.cooldownUntil);
+                userStorage.removeItem(LS_KEYS.cooldownUntil);
             }
         }
 
@@ -569,7 +730,7 @@
                 btn.disabled = true;
             } else {
                 if (getCooldownUntil() !== 0) setCooldownUntil(0);
-                if (localStorage.getItem(LS_KEYS.withdrawn) === "1") {
+                if (userStorage.getItem(LS_KEYS.withdrawn) === "1") {
                     setWithdrawBtnActive();
                 } else {
                     setWithdrawBtnDefault();
@@ -620,8 +781,8 @@
         // ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ КНОПОК ПРИ ЗАГРУЗКЕ
         // ============================================================
         function restoreFinishBtn() {
-            const finishValueRaw = localStorage.getItem(LS_KEYS.finishValue);
-            const isAccumulating = localStorage.getItem(LS_KEYS.withdrawn) === "1";
+            const finishValueRaw = userStorage.getItem(LS_KEYS.finishValue);
+            const isAccumulating = userStorage.getItem(LS_KEYS.withdrawn) === "1";
 
             // Идёт новый цикл накопления — вторая кнопка активна, ваучер скрыт
             if (isAccumulating) {
@@ -659,7 +820,7 @@
             }
 
             if (btn.disabled && btn.textContent.startsWith("Доступно через")) {
-                if (localStorage.getItem(LS_KEYS.withdrawn) === "1") {
+                if (userStorage.getItem(LS_KEYS.withdrawn) === "1") {
                     setWithdrawBtnActive();
                 } else {
                     setWithdrawBtnDefault();
@@ -680,11 +841,11 @@
             counter3.startDate = Date.now();
             counter3.active = true;
 
-            localStorage.setItem(LS_KEYS.withdrawn, "1");
+            userStorage.setItem(LS_KEYS.withdrawn, "1");
             saveCounterState(counter3);
 
             // Оживляем вторую кнопку и скрываем кнопку ваучера
-            localStorage.removeItem(LS_KEYS.finishValue);
+            userStorage.removeItem(LS_KEYS.finishValue);
             setFinishBtnDefault(true);
             hideVoucherBtn();
         });
@@ -730,12 +891,12 @@
 
             // 3. Возвращаем первую кнопку в исходное состояние
             //    и ставим её на период охлаждения
-            localStorage.removeItem(LS_KEYS.withdrawn);
+            userStorage.removeItem(LS_KEYS.withdrawn);
             setCooldownUntil(Date.now() + COOLDOWN_MS);
             refreshWithdrawBtn();
 
             // 4. Фиксируем значение на второй кнопке
-            localStorage.setItem(LS_KEYS.finishValue, String(finalValue));
+            userStorage.setItem(LS_KEYS.finishValue, String(finalValue));
             setFinishBtnFrozen(finalValue);
 
             // 5. Показываем кнопку ваучера под основной парой кнопок
@@ -774,15 +935,12 @@
         });
 
         // ============================================================
-        // ДЕМО: смена скорости counter3
-        // ============================================================
-        // changeSpeed(counter3, 0.00000000000902616);
-
-        // ============================================================
         // НОВОСТИ
         // ============================================================
         const news = [
-            { date: "16.10.2026", text: "🪙 42,2 трлн.рублей - Капитализация рынка акций РФ. Нам есть куда расти.", isNew: true },
+            { date: "18.10.2026", text: "💡Скорость прироста Богатства на Вашем счете увеличилась на 2%⚡️.", isNew: true },
+            { date: "16.10.2026", text: "⚡️ Запуск Telegram Mini App @ubiru_bot"},
+            { date: "16.10.2026", text: "🪙 42,2 трлн.рублей - Капитализация рынка акций РФ. Нам есть куда расти."},
             { date: "15.10.2026", text: "💡Скорость прироста Богатства на Вашем счете увеличилась на 4%⚡️."},
             { date: "14.10.2026", text: "Подключение личного счета."},
             { date: "13.10.2026", text: "Подключение новой страны - Россия🇷🇺." },
@@ -817,18 +975,19 @@
         // ============================================================
         // БЛОК "О ПРОЕКТЕ"
         // ============================================================
-        // Правила форматирования:
-        //   { type: "p",  html: "..." }           — абзац (можно <strong>, <span class="accent">)
-        //   { type: "ul", items: ["...", "..."] } — маркированный список
-        //   { type: "hr" }                        — тонкий разделитель
-        //
-        // Чтобы добавить/поправить текст — просто отредактируйте этот массив.
-
         const aboutText = [
             {
                 type: "p",
-                html: '<strong>Цель проекта</strong> — 💡 Стремление к счастью.'
+                html: '<strong>Цель проекта</strong>'
             },
+            {
+                type: "ul",
+                items: [
+                    "💡 Обеспечение каждого Безусловным Базовым Доходом.",
+                    "💡 Создание благополучного и счастливого Будущего."
+                ]
+            },
+            { type: "hr" },
             {
                 type: "p",
                 html: '<strong>Правила:</strong>'
@@ -836,9 +995,7 @@
             {
                 type: "ul",
                 items: [
-                    "Каждый имеет право быть счастливым.",
-                    "Каждый имеет право на Базовый Доход.",
-                    "Ваша доля начисляется автоматически после активации личного счёта.",
+                    "Ваша доля Базового Дохода начисляется автоматически после активации личного счёта.",
                     "Вы можете вывести свою долю.",
                     "После вывода доли действует период охлаждения."
                 ]
@@ -846,8 +1003,17 @@
             { type: "hr" },
             {
                 type: "p",
-                html: '<strong>Условия:</strong> Безусловный Базовый Доход выплачивается всем, а не только нуждающимся.Не требуется проверки доходов или обязанности поиска работы. Это постоянная выплата, а не разовая акция. '
+                html: '<strong>Условия:</strong>'
             },
+            {
+                type: "ul",
+                items: [
+                    "Безусловный Базовый Доход выплачивается всем, а не только нуждающимся.",
+                    "Это постоянная выплата, а не разовая акция.",
+                    "Не требуется проверки доходов или обязанности поиска работы."
+                ]
+            },
+            { type: "hr" },
             {
                 type: "p",
                 html: '<strong>Важно:</strong> Каждый имеет право быть счастливым. Мы помогаем Вам хотя бы немного не переживать за будущее. '
